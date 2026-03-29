@@ -6,8 +6,8 @@
 |------|------------|
 | `ScreenDimmer.csproj` | SDK-style проект: WPF + Windows Forms (трей, `Screen`), .NET 8 Windows, манифест, `ApplicationIcon` → `Assets\app.ico` |
 | `app.manifest` | `requestedExecutionLevel` — запуск без повышения прав |
-| `App.xaml` / `App.xaml.cs` | Точка входа WPF: mutex, хук, трей, `ShutdownMode.OnExplicitShutdown`; создаёт `MainWindow` и показывает при старте (**подэтап 2.1**; в **2.5** — без автопоказа) |
-| `README.md` | Краткое описание |
+| `App.xaml` / `App.xaml.cs` | Точка входа WPF: mutex, хук, трей, `ShutdownMode.OnExplicitShutdown`; создаёт `MainWindow` **без** `Show()` при старте (**2.5**); переключение окна из трея — `Dispatcher.BeginInvoke(ToggleMainWindowSafe)`; при показе — `Topmost` + `Activate` (**2.6** + фикс ЛКМ) |
+| `README.md` | Описание приложения и краткое руководство пользователя |
 
 ## Логика приложения
 
@@ -16,18 +16,18 @@
 | `LowLevelKeyboardHook.cs` | `SetWindowsHookEx(WH_KEYBOARD_LL)`, реакция на отпускание F8 (`VK_F8` = 0x77) |
 | `DimmerService.cs` | Список оверлей-окон по мониторам, переключение видимости |
 | `OverlayWindow.xaml` (+ `.cs`) | Чёрное полноэкранное окно, `SetWindowPos`, `WS_EX_TOOLWINDOW` |
-| `NotifyIconService.cs` | Контекстное меню трея (Toggle, автозапуск, Exit), подсказка |
+| `NotifyIconService.cs` | Контекстное меню трея (Toggle, автозапуск, Exit); **ЛКМ** — `MouseDown` → `MainWindowToggleRequested` (не `MouseClick` — надёжнее в трее и у «скрытых» иконок) (**2.6**) |
 | `TrayIconLoader.cs` | Загрузка `Assets\app.ico` для `NotifyIcon` |
 | `AutostartService.cs` | Автозапуск: ярлык `ScreenDimmer.lnk` в папке пользователя **Автозагрузка** (без реестра HKLM) |
-| `MainWindow.xaml` (+ `.cs`) | Инфо-окно этапа 2: `WindowChrome`, шапка, «в трей», `Closing` → `Hide` (**2.2**); переключатель **тёмная/светлая** тема в сессии (**2.3**); `ShowInTaskbar = false`; дальше — сохранение настроек (**2.4**), трей (см. [PLAN.md](PLAN.md)) |
+| `MainWindow.xaml` (+ `.cs`) | Инфо-окно этапа 2: хром (**2.2**), темы (**2.3**), настройки (**2.4**); `ShowInTaskbar = false`; показ не из старта приложения — **2.5** + **2.6** (см. [PLAN.md](PLAN.md)) |
+| `UserSettingsData.cs` | Модель настроек: тема, Left/Top/Width/Height |
+| `UserSettingsStore.cs` | JSON `%LocalAppData%\ScreenDimmer\settings.json` |
 
-### Этап 2 — оставшиеся шаги (см. [PLAN.md](PLAN.md))
+### Этап 2 (инфо-окно) — готово
 
-| Файл / слой | Что сделать |
-|-------------|-------------|
-| Настройки пользователя | Сохранение темы и геометрии окна (`Properties.Settings` или JSON в `%AppData%`) |
-| `NotifyIconService.cs` | **ЛКМ** — показ/скрытие главного окна |
-| `App.xaml.cs` | Скрытие `MainWindow` при старте (**2.5**), связка показа с треем |
+Соответствует **PLAN.md** (подэтапы 2.1–2.7). Ключевые точки: `MainWindow` + `UserSettingsStore`, трей (**ЛКМ** — окно), без кнопки в панели задач, настройки в `%LocalAppData%\ScreenDimmer\settings.json`, выход только **Exit** в меню трея, один экземпляр (**mutex**), F8 и автозапуск как в MVP.
+
+**Этап 3** (упаковка / установщик для переноса на другие ПК) — не в репозитории, **отложен** (см. **PROJECT_LOG**).
 
 ## Ресурсы
 

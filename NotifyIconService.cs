@@ -13,6 +13,8 @@ public sealed class NotifyIconService : IDisposable
 
     public event Action? ToggleRequested;
     public event Action? ExitRequested;
+    /// <summary>Подэтап 2.6: левый клик по иконке — показать/скрыть главное окно (обработка в WPF через Dispatcher).</summary>
+    public event Action? MainWindowToggleRequested;
 
     public NotifyIconService()
     {
@@ -40,10 +42,19 @@ public sealed class NotifyIconService : IDisposable
         _notifyIcon = new NotifyIcon
         {
             Icon = trayIcon,
-            Text = "ScreenDimmer — F8 для переключения",
+            Text = "ScreenDimmer — F8 затемнение; ЛКМ — окно настроек",
             Visible = true,
             ContextMenuStrip = _contextMenu,
         };
+        // ЛКМ: MouseDown, а не MouseClick — в трее (в т.ч. у «скрытых» иконок) пары Down/Up часто
+        // не распознаются как полный клик, и MouseClick не вызывается.
+        _notifyIcon.MouseDown += OnNotifyIconMouseDown;
+    }
+
+    private void OnNotifyIconMouseDown(object? sender, MouseEventArgs e)
+    {
+        if (e.Button == MouseButtons.Left)
+            MainWindowToggleRequested?.Invoke();
     }
 
     private void OnAutostartClick(object? sender, EventArgs e)

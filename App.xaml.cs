@@ -39,11 +39,10 @@ public partial class App : System.Windows.Application
         _tray = new NotifyIconService();
         _tray.ToggleRequested += () => Dispatcher.Invoke(ToggleDimmerSafe);
         _tray.ExitRequested += () => Dispatcher.InvokeShutdown();
+        _tray.MainWindowToggleRequested += () => Dispatcher.BeginInvoke(ToggleMainWindowSafe);
 
-        // Подэтап 2.1: тестовый показ каркаса окна (критерий готовности в PLAN.md).
-        // Подэтап 2.5: окно не показывать при старте автоматически.
+        // Подэтап 2.5–2.6: окно создаётся в коде, при старте скрыто; ЛКМ по иконке трея — показ/скрытие.
         _mainWindow = new MainWindow();
-        _mainWindow.Show();
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -83,6 +82,28 @@ public partial class App : System.Windows.Application
         {
             // Не роняем процесс из-за ошибки оверлея.
             System.Diagnostics.Debug.WriteLine(ex);
+        }
+    }
+
+    /// <summary>
+    /// Подэтап 2.6: WinForms трей вызывает из фона — переключение окна только на UI-потоке WPF.
+    /// </summary>
+    private void ToggleMainWindowSafe()
+    {
+        if (_mainWindow == null)
+            return;
+        if (_mainWindow.IsVisible)
+        {
+            _mainWindow.Hide();
+        }
+        else
+        {
+            _mainWindow.Show();
+            _mainWindow.WindowState = WindowState.Normal;
+            // Без краткого Topmost окно часто остаётся под другими после клика по трею (ограничения foreground).
+            _mainWindow.Topmost = true;
+            _mainWindow.Activate();
+            _mainWindow.Topmost = false;
         }
     }
 }
