@@ -14,6 +14,7 @@ public partial class App : System.Windows.Application
     private NotifyIconService? _tray;
     private LowLevelKeyboardHook? _keyboardHook;
     private DimmerService? _dimmer;
+    private MainWindow? _mainWindow;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -38,6 +39,11 @@ public partial class App : System.Windows.Application
         _tray = new NotifyIconService();
         _tray.ToggleRequested += () => Dispatcher.Invoke(ToggleDimmerSafe);
         _tray.ExitRequested += () => Dispatcher.InvokeShutdown();
+
+        // Подэтап 2.1: тестовый показ каркаса окна (критерий готовности в PLAN.md).
+        // Подэтап 2.5: окно не показывать при старте автоматически.
+        _mainWindow = new MainWindow();
+        _mainWindow.Show();
     }
 
     protected override void OnExit(ExitEventArgs e)

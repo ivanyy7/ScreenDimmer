@@ -6,7 +6,7 @@
 |------|------------|
 | `ScreenDimmer.csproj` | SDK-style проект: WPF + Windows Forms (трей, `Screen`), .NET 8 Windows, манифест, `ApplicationIcon` → `Assets\app.ico` |
 | `app.manifest` | `requestedExecutionLevel` — запуск без повышения прав |
-| `App.xaml` / `App.xaml.cs` | Точка входа WPF: mutex, хук, трей, `ShutdownMode.OnExplicitShutdown` |
+| `App.xaml` / `App.xaml.cs` | Точка входа WPF: mutex, хук, трей, `ShutdownMode.OnExplicitShutdown`; создаёт `MainWindow` и показывает при старте (**подэтап 2.1**; в **2.5** — без автопоказа) |
 | `README.md` | Краткое описание |
 
 ## Логика приложения
@@ -19,15 +19,15 @@
 | `NotifyIconService.cs` | Контекстное меню трея (Toggle, автозапуск, Exit), подсказка |
 | `TrayIconLoader.cs` | Загрузка `Assets\app.ico` для `NotifyIcon` |
 | `AutostartService.cs` | Автозапуск: ярлык `ScreenDimmer.lnk` в папке пользователя **Автозагрузка** (без реестра HKLM) |
+| `MainWindow.xaml` (+ `.cs`) | Инфо-окно этапа 2: `WindowChrome`, шапка, «в трей», `Closing` → `Hide` (**2.2**); переключатель **тёмная/светлая** тема в сессии (**2.3**); `ShowInTaskbar = false`; дальше — сохранение настроек (**2.4**), трей (см. [PLAN.md](PLAN.md)) |
 
-### План этапа 2 (см. [PLAN.md](PLAN.md) — пока не реализовано в коде)
+### Этап 2 — оставшиеся шаги (см. [PLAN.md](PLAN.md))
 
-| Файл / слой | Назначение (после внедрения) |
-|-------------|-------------------------------|
-| `MainWindow.xaml` (+ `.cs`) | Инфо-окно: тексты, тема тёмная/светлая, без крестика, сворачивание в трей; `ShowInTaskbar = false` |
+| Файл / слой | Что сделать |
+|-------------|-------------|
 | Настройки пользователя | Сохранение темы и геометрии окна (`Properties.Settings` или JSON в `%AppData%`) |
-| `NotifyIconService.cs` | Дополнение: **ЛКМ** — показ/скрытие главного окна (меню трея и Exit — без изменения смысла) |
-| `App.xaml.cs` | Создание `MainWindow` в коде, скрытие при старте, связка с треем |
+| `NotifyIconService.cs` | **ЛКМ** — показ/скрытие главного окна |
+| `App.xaml.cs` | Скрытие `MainWindow` при старте (**2.5**), связка показа с треем |
 
 ## Ресурсы
 
