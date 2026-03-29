@@ -4,7 +4,7 @@
 
 | Файл | Назначение |
 |------|------------|
-| `ScreenDimmer.csproj` | SDK-style проект: WPF + Windows Forms (трей, `Screen`), .NET 8 Windows, манифест |
+| `ScreenDimmer.csproj` | SDK-style проект: WPF + Windows Forms (трей, `Screen`), .NET 8 Windows, манифест, `ApplicationIcon` → `Assets\app.ico` |
 | `app.manifest` | `requestedExecutionLevel` — запуск без повышения прав |
 | `App.xaml` / `App.xaml.cs` | Точка входа WPF: mutex, хук, трей, `ShutdownMode.OnExplicitShutdown` |
 | `README.md` | Краткое описание |
@@ -16,7 +16,18 @@
 | `LowLevelKeyboardHook.cs` | `SetWindowsHookEx(WH_KEYBOARD_LL)`, реакция на отпускание F8 (`VK_F8` = 0x77) |
 | `DimmerService.cs` | Список оверлей-окон по мониторам, переключение видимости |
 | `OverlayWindow.xaml` (+ `.cs`) | Чёрное полноэкранное окно, `SetWindowPos`, `WS_EX_TOOLWINDOW` |
-| `NotifyIconService.cs` | Контекстное меню трея и подсказка |
+| `NotifyIconService.cs` | Контекстное меню трея (Toggle, автозапуск, Exit), подсказка |
+| `TrayIconLoader.cs` | Загрузка `Assets\app.ico` для `NotifyIcon` |
+| `AutostartService.cs` | Автозапуск: ярлык `ScreenDimmer.lnk` в папке пользователя **Автозагрузка** (без реестра HKLM) |
+
+## Ресурсы
+
+| Путь | Назначение |
+|------|------------|
+| `Assets/app.ico` | Иконка приложения (exe) и трея; копируется в выходной каталог |
+| `tools/rebuild-app-ico.ps1` | Сборка **валидного для GDI+** `Assets\app.ico` (иконка трея и exe) |
+| `tools/png-to-ico.ps1` | Альтернатива: ICO из PNG; после генерации проверять `new Icon(path)` |
+| `tools/check-icon.ps1` | Диагностика: размер ICO, `ExtractAssociatedIcon` для собранного exe (локальная проверка) |
 
 ## Сборка
 
